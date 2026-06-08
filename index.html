@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Galeria de Fotos</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --card: #141414;
+    --border: #2a2a2a;
+    --border-hi: #3a3a3a;
+    --text: #f0ede8;
+    --text-sec: #a0998f;
+    --text-muted: #6a6560;
+    --accent: #c9a96e;
+    --surface: #1a1a1a;
+    --radius: 16px;
+    --shadow: 0 8px 32px rgba(0,0,0,0.6);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* HEADER */
+  header { text-align: center; padding: 60px 20px 40px; position: relative; overflow: hidden; }
+  header::before { content: ''; position: absolute; top: -100px; left: 50%; transform: translateX(-50%); width: 600px; height: 400px; background: radial-gradient(ellipse, rgba(201,169,110,0.12) 0%, transparent 70%); pointer-events: none; }
+  .header-label { font-size: 11px; letter-spacing: 0.4em; color: var(--accent); text-transform: uppercase; margin-bottom: 16px; font-weight: 500; }
+  .header-title { font-family: 'Playfair Display', serif; font-size: clamp(36px, 6vw, 72px); font-weight: 900; color: var(--text); line-height: 1.05; letter-spacing: -0.02em; margin-bottom: 16px; }
+  .header-title span { color: var(--accent); }
+  .header-sub { font-size: 15px; color: var(--text-sec); max-width: 500px; margin: 0 auto 32px; line-height: 1.6; }
+  #editHeaderBtn { background: transparent; border: 1px solid var(--border-hi); color: var(--text-sec); padding: 8px 20px; border-radius: 8px; font-family: 'Outfit', sans-serif; font-size: 13px; cursor: pointer; transition: all 0.2s; }
+  #editHeaderBtn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* MODAL */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+  .modal-overlay.open { display: flex; }
+  .modal-box { background: var(--card); border: 1px solid var(--border-hi); border-radius: var(--radius); padding: 32px; width: 100%; max-width: 480px; }
+  .modal-title { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--text); margin-bottom: 24px; }
+  .form-group { margin-bottom: 16px; }
+  .form-label { display: block; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; }
+  .form-input, .form-textarea { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; color: var(--text); font-family: 'Outfit', sans-serif; font-size: 14px; outline: none; transition: border-color 0.2s; }
+  .form-input:focus, .form-textarea:focus { border-color: var(--accent); }
+  .form-textarea { resize: vertical; min-height: 80px; }
+  .modal-actions { display: flex; gap: 10px; margin-top: 24px; }
+  .btn-secondary { flex: 1; background: transparent; border: 1px solid var(--border-hi); color: var(--text-sec); padding: 12px; border-radius: 10px; font-family: 'Outfit', sans-serif; font-size: 14px; cursor: pointer; transition: all 0.2s; }
+  .btn-secondary:hover { border-color: var(--text-muted); color: var(--text); }
+  .btn-primary { flex: 2; background: var(--accent); border: none; color: #0a0a0a; padding: 12px; border-radius: 10px; font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+  .btn-primary:hover { background: #d4b480; }
+
+  /* MODAL FOTO - upload options */
+  .upload-options { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+  .upload-opt { display: flex; align-items: center; gap: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; cursor: pointer; transition: all 0.2s; }
+  .upload-opt:hover { border-color: var(--accent); }
+  .upload-opt-icon { font-size: 24px; width: 40px; text-align: center; }
+  .upload-opt-text { flex: 1; }
+  .upload-opt-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+  .upload-opt-sub { font-size: 12px; color: var(--text-muted); }
+  .link-input-group { margin-top: 8px; }
+
+  /* GRID */
+  .grid-container { max-width: 1200px; margin: 0 auto; padding: 20px 20px 80px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+
+  /* CARD */
+  .photo-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; transition: border-color 0.3s, transform 0.3s; }
+  .photo-card:hover { border-color: var(--border-hi); transform: translateY(-4px); }
+
+  .photo-slot { width: 100%; position: relative; padding-top: 120%; background: var(--surface); overflow: hidden; cursor: pointer; }
+  .photo-slot img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; transition: transform 0.4s; }
+  .photo-card:hover .photo-slot img { transform: scale(1.04); }
+  .photo-slot .photo-placeholder, .photo-slot .photo-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+
+  .photo-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: var(--text-muted); }
+  .photo-placeholder svg { width: 40px; height: 40px; opacity: 0.4; }
+  .photo-placeholder span { font-size: 13px; opacity: 0.6; }
+
+  .photo-overlay { background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; }
+  .photo-slot:hover .photo-overlay { opacity: 1; }
+  .overlay-btn { background: rgba(255,255,255,0.15); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 8px 16px; border-radius: 8px; font-size: 13px; cursor: pointer; font-family: 'Outfit', sans-serif; }
+
+  .card-body { padding: 16px; }
+  .card-number { font-size: 10px; letter-spacing: 0.3em; color: var(--accent); text-transform: uppercase; margin-bottom: 8px; }
+  .card-title { font-family: 'Playfair Display', serif; font-size: 16px; color: var(--text); margin-bottom: 4px; min-height: 22px; }
+  .card-link-label { font-size: 11px; color: var(--text-muted); word-break: break-all; min-height: 16px; margin-bottom: 12px; }
+
+  /* BOTÃO MERCADO LIVRE */
+  .btn-ml {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    width: calc(100% - 32px); margin: 0 16px 16px;
+    background: linear-gradient(135deg, #ffe600 0%, #f5c800 100%);
+    border: none; border-radius: 10px; padding: 13px 16px;
+    color: #222; font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 700;
+    cursor: pointer; text-decoration: none; transition: all 0.2s;
+  }
+  .btn-ml:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(255,200,0,0.35); }
+  .btn-ml-placeholder {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    width: calc(100% - 32px); margin: 0 16px 16px;
+    background: var(--surface); border: 1px dashed var(--border-hi);
+    border-radius: 10px; padding: 13px 16px;
+    color: var(--text-muted); font-family: 'Outfit', sans-serif; font-size: 13px;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .btn-ml-placeholder:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* SAVE BAR */
+  .save-bar { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--card); border: 1px solid var(--border-hi); border-radius: 50px; padding: 12px 24px; display: flex; align-items: center; gap: 16px; box-shadow: var(--shadow); z-index: 100; }
+  .save-status { font-size: 13px; color: var(--text-sec); }
+  .save-btn { background: var(--accent); border: none; border-radius: 30px; padding: 8px 20px; color: #0a0a0a; font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+  .save-btn:hover { background: #d4b480; }
+  .reset-btn { background: transparent; border: 1px solid var(--border-hi); border-radius: 30px; padding: 8px 16px; color: var(--text-muted); font-family: 'Outfit', sans-serif; font-size: 13px; cursor: pointer; transition: all 0.2s; }
+  .reset-btn:hover { color: var(--text-sec); }
+
+  /* TOAST */
+  .toast { position: fixed; top: 24px; right: 24px; background: var(--accent); color: #0a0a0a; padding: 12px 20px; border-radius: 10px; font-size: 14px; font-weight: 600; z-index: 9999; transform: translateY(-80px); opacity: 0; transition: all 0.3s; }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  input[type="file"] { display: none; }
+
+  @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } .save-bar { width: calc(100% - 32px); } }
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast">✓ Salvo!</div>
+
+<!-- HEADER -->
+<header>
+  <div class="header-label">Galeria</div>
+  <h1 class="header-title" id="pageTitle">Minha <span>Galeria</span></h1>
+  <p class="header-sub" id="pageSubtitle">Clique nas fotos para adicionar imagens e links para cada uma delas.</p>
+  <button id="editHeaderBtn" onclick="openHeaderModal()">✏ Editar título</button>
+</header>
+
+<!-- MODAL HEADER -->
+<div class="modal-overlay" id="headerModal">
+  <div class="modal-box">
+    <div class="modal-title">Editar Cabeçalho</div>
+    <div class="form-group"><label class="form-label">Título principal</label><input class="form-input" id="inputTitle" placeholder="Minha Galeria" /></div>
+    <div class="form-group"><label class="form-label">Palavra destacada (dourada)</label><input class="form-input" id="inputHighlight" placeholder="Galeria" /></div>
+    <div class="form-group"><label class="form-label">Subtítulo</label><textarea class="form-textarea" id="inputSubtitle" placeholder="Descrição da página..."></textarea></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeHeaderModal()">Cancelar</button>
+      <button class="btn-primary" onclick="saveHeader()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL FOTO -->
+<div class="modal-overlay" id="photoModal">
+  <div class="modal-box" style="max-width:440px">
+    <div class="modal-title" id="photoModalTitle">Configurar Foto 01</div>
+    <div class="upload-options">
+      <div class="upload-opt" onclick="triggerFileInput()">
+        <div class="upload-opt-icon">📷</div>
+        <div class="upload-opt-text">
+          <div class="upload-opt-title" id="uploadOptTitle">Adicionar foto</div>
+          <div class="upload-opt-sub">Selecione uma imagem do seu dispositivo</div>
+        </div>
+        <span style="color:var(--accent);font-size:18px">›</span>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Título do produto</label>
+      <input class="form-input" id="modalTitle" placeholder="Ex: Tênis Nike Air Max..." />
+    </div>
+    <div class="form-group link-input-group">
+      <label class="form-label">Link do Mercado Livre</label>
+      <input class="form-input" id="modalLink" placeholder="https://www.mercadolivre.com.br/..." />
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closePhotoModal()">Cancelar</button>
+      <button class="btn-primary" onclick="savePhotoConfig()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- GRID -->
+<div class="grid-container">
+  <div class="grid" id="photoGrid"></div>
+</div>
+
+<!-- SAVE BAR -->
+<div class="save-bar">
+  <span class="save-status" id="saveStatus">Alterações não salvas</span>
+  <button class="reset-btn" onclick="resetAll()">Limpar tudo</button>
+  <button class="save-btn" onclick="saveAll()">💾 Salvar tudo</button>
+</div>
+
+<input type="file" id="fileInput" accept="image/*" onchange="handleFileChange(event)">
+
+<script>
+  const STORAGE_KEY = 'galeria_landing_v2';
+  let currentSlot = null;
+  let data = {
+    header: { title: 'Minha', highlight: 'Galeria', subtitle: 'Clique nas fotos para adicionar imagens e links para cada uma delas.' },
+    slots: Array.from({length: 8}, () => ({ title: '', link: '', image: '' }))
+  };
+
+  function loadData() {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) { try { data = JSON.parse(saved); } catch(e) {} }
+    renderHeader();
+    renderGrid();
+    updateSaveStatus(true);
+  }
+
+  function saveAll() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    updateSaveStatus(true);
+    showToast('✓ Salvo com sucesso!');
+  }
+
+  function updateSaveStatus(saved) {
+    const el = document.getElementById('saveStatus');
+    el.textContent = saved ? '✓ Dados salvos localmente' : '● Alterações não salvas';
+    el.style.color = saved ? '#c9a96e' : '#a0998f';
+  }
+
+  function resetAll() {
+    if (!confirm('Limpar todos os dados? Esta ação não pode ser desfeita.')) return;
+    localStorage.removeItem(STORAGE_KEY);
+    data = {
+      header: { title: 'Minha', highlight: 'Galeria', subtitle: 'Clique nas fotos para adicionar imagens e links.' },
+      slots: Array.from({length: 8}, () => ({ title: '', link: '', image: '' }))
+    };
+    renderHeader();
+    renderGrid();
+    updateSaveStatus(false);
+  }
+
+  function renderHeader() {
+    const h = data.header;
+    document.getElementById('pageTitle').innerHTML = h.title + ' <span>' + h.highlight + '</span>';
+    document.getElementById('pageSubtitle').textContent = h.subtitle;
+  }
+
+  function openHeaderModal() {
+    document.getElementById('inputTitle').value = data.header.title;
+    document.getElementById('inputHighlight').value = data.header.highlight;
+    document.getElementById('inputSubtitle').value = data.header.subtitle;
+    document.getElementById('headerModal').classList.add('open');
+  }
+
+  function closeHeaderModal() { document.getElementById('headerModal').classList.remove('open'); }
+
+  function saveHeader() {
+    data.header.title = document.getElementById('inputTitle').value || 'Minha';
+    data.header.highlight = document.getElementById('inputHighlight').value || 'Galeria';
+    data.header.subtitle = document.getElementById('inputSubtitle').value || '';
+    renderHeader();
+    closeHeaderModal();
+    updateSaveStatus(false);
+  }
+
+  // MODAL FOTO
+  function openPhotoModal(index) {
+    currentSlot = index;
+    const slot = data.slots[index];
+    document.getElementById('photoModalTitle').textContent = 'Configurar Foto ' + String(index+1).padStart(2,'0');
+    document.getElementById('uploadOptTitle').textContent = slot.image ? 'Trocar foto' : 'Adicionar foto';
+    document.getElementById('modalTitle').value = slot.title || '';
+    document.getElementById('modalLink').value = slot.link || '';
+    document.getElementById('photoModal').classList.add('open');
+  }
+
+  function closePhotoModal() {
+    document.getElementById('photoModal').classList.remove('open');
+  }
+
+  function savePhotoConfig() {
+    if (currentSlot === null) return;
+    data.slots[currentSlot].title = document.getElementById('modalTitle').value;
+    data.slots[currentSlot].link = document.getElementById('modalLink').value;
+    renderGrid();
+    closePhotoModal();
+    updateSaveStatus(false);
+  }
+
+  function triggerFileInput() {
+    document.getElementById('fileInput').click();
+  }
+
+  function handleFileChange(event) {
+    const file = event.target.files[0];
+    if (!file || currentSlot === null) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      data.slots[currentSlot].image = e.target.result;
+      document.getElementById('uploadOptTitle').textContent = 'Trocar foto';
+      renderGrid();
+      updateSaveStatus(false);
+    };
+    reader.readAsDataURL(file);
+    event.target.value = '';
+  }
+
+  function renderGrid() {
+    const grid = document.getElementById('photoGrid');
+    grid.innerHTML = '';
+    data.slots.forEach((slot, i) => {
+      const card = document.createElement('div');
+      card.className = 'photo-card';
+
+      const hasLink = slot.link && slot.link.trim() !== '';
+      const mlBtn = hasLink
+        ? '<a class="btn-ml" href="' + slot.link + '" target="_blank">' +
+          '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>' +
+          'Compre agora no Mercado Livre</a>'
+        : '<div class="btn-ml-placeholder" onclick="openPhotoModal(' + i + ')">' +
+          '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>' +
+          'Adicionar link do produto</div>';
+
+      card.innerHTML =
+        '<div class="photo-slot" onclick="openPhotoModal(' + i + ')">' +
+          (slot.image
+            ? '<img src="' + slot.image + '" alt="Foto ' + (i+1) + '" />'
+            : '<div class="photo-placeholder">' +
+              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>' +
+              '<span>Clique para adicionar foto</span>' +
+              '</div>') +
+          '<div class="photo-overlay"><button class="overlay-btn">' + (slot.image ? '🔄 Trocar foto' : '📷 Adicionar foto') + '</button></div>' +
+        '</div>' +
+        '<div class="card-body">' +
+          '<div class="card-number">Foto ' + String(i+1).padStart(2,'0') + '</div>' +
+          '<div class="card-title">' + (slot.title || '<span style="color:var(--text-muted);font-size:13px">Sem título</span>') + '</div>' +
+          '<div class="card-link-label">' + (hasLink ? '<span style="color:var(--accent)">🔗 Link configurado</span>' : '<span style="color:var(--text-muted)">Sem link</span>') + '</div>' +
+        '</div>' +
+        mlBtn;
+
+      grid.appendChild(card);
+    });
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  document.getElementById('headerModal').addEventListener('click', function(e) { if (e.target === this) closeHeaderModal(); });
+  document.getElementById('photoModal').addEventListener('click', function(e) { if (e.target === this) closePhotoModal(); });
+
+  window.addEventListener('beforeunload', function() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  });
+
+  loadData();
+</script>
+</body>
+</html>
