@@ -56,6 +56,19 @@ document.addEventListener('DOMContentLoaded', function() {
     document.body.style.visibility = '';
     var el = qs('#user-email');
     if (el) el.textContent = user.email;
+
+    // Botão Sair
+    var btnLogout = qs('#btn-logout');
+    if (btnLogout) {
+      btnLogout.addEventListener('click', function() {
+        auth.signOut().then(function() {
+          window.location.href = 'login.html';
+        }).catch(function(e) {
+          toast('Erro ao sair: ' + e.message, 'error');
+        });
+      });
+    }
+
     initAdmin();
   });
 
