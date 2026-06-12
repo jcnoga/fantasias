@@ -138,10 +138,21 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--dk);min-h
 <body>
 
 <!-- TOPBAR -->
-<button class="tbtn tbtn-out"
-onclick="window.open('https://jcnoga.github.io/sonhorealmix/', '_blank');">
-    <i class="fas fa-external-link-alt"></i> Abrir Loja
-</button>/header>
+<header class="topbar">
+  <div class="tb-brand">
+    <i class="fas fa-star"></i> Sonho Real Mix — Admin
+  </div>
+  <div class="tb-right">
+    <span class="tb-email">Logado como: <strong id="user-email">...</strong></span>
+    <button class="tbtn tbtn-view"
+      onclick="window.open('https://jcnoga.github.io/sonhorealmix/', '_blank');">
+      <i class="fas fa-external-link-alt"></i> Abrir Loja
+    </button>
+    <button class="tbtn tbtn-out" id="btn-logout">
+      <i class="fas fa-right-from-bracket"></i> Sair
+    </button>
+  </div>
+</header>
 
 <div class="layout">
   <!-- SIDEBAR -->
