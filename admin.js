@@ -43,6 +43,16 @@ document.addEventListener('DOMContentLoaded', function() {
   // Esconde pagina ate auth confirmar
   document.body.style.visibility = 'hidden';
 
+  // Botão Sair — registrado aqui, fora do onAuthStateChanged
+  var btnLogout = document.getElementById('btn-logout');
+  if (btnLogout) {
+    btnLogout.onclick = function() {
+      auth.signOut()
+        .then(function() { window.location.href = 'login.html'; })
+        .catch(function(e) { toast('Erro ao sair: ' + e.message, 'error'); });
+    };
+  }
+
   var guardTimer = setTimeout(function() {
     window.location.href = 'login.html';
   }, 8000);
@@ -54,21 +64,8 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
     document.body.style.visibility = '';
-    var el = qs('#user-email');
+    var el = document.getElementById('user-email');
     if (el) el.textContent = user.email;
-
-    // Botão Sair
-    var btnLogout = qs('#btn-logout');
-    if (btnLogout) {
-      btnLogout.addEventListener('click', function() {
-        auth.signOut().then(function() {
-          window.location.href = 'login.html';
-        }).catch(function(e) {
-          toast('Erro ao sair: ' + e.message, 'error');
-        });
-      });
-    }
-
     initAdmin();
   });
 
